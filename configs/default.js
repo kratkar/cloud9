@@ -26,7 +26,7 @@ module.exports = {
         master: {
             title: "Cloud9",
             plugins: [{
-                packagePath: "./cloud9.connect",
+                packagePath: "connect-architect/connect",
                 port: port,
                 host: "localhost"
             }, {
@@ -117,7 +117,7 @@ module.exports = {
                     "ext/nodeunit/nodeunit",
                     "ext/zen/zen",
                     "ext/codecomplete/codecomplete",
-                    "ext/vim/vim", 
+                    "ext/vim/vim",
                     "ext/guidedtour/guidedtour",
                     "ext/quickstart/quickstart",
                     "ext/jslanguage/jslanguage",
@@ -138,11 +138,11 @@ module.exports = {
             },
             "./cloud9.socket",
             {
-                packagePath: "./cloud9.session",
+                packagePath: "connect-architect/connect.session",
                 key: "cloud9.sid." + port,
                 secret: "1234"
             }, {
-                packagePath: "./cloud9.session.file",
+                packagePath: "connect-architect/connect.session.file",
                 sessionsPath: __dirname + "/../.architect/sessions"
             },
             "./cloud9.permissions",
@@ -156,7 +156,7 @@ module.exports = {
             "./cloud9.run.node",
             "./cloud9.run.node-debug",
             "./cloud9.run.npm",
-            "./cloud9.log",
+            "architect/plugins/architect.log",
             "./cloud9.ide.auth",
             "./cloud9.ide.blame",
             "./cloud9.ide.git",
