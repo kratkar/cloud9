@@ -12,22 +12,24 @@
 
     "pm": "sm",
     "dependencies": {
-        
+
         "socket.io": "0.9.x",
         "socket.io-client": "0.9.x",
         "connect": "1.8.x",
-        
+
         "sourcemint-loader-js": "0.x",
         "sourcemint-platform-nodejs": "0.x",
         "http-error": "~0.0.1",
         "simple-template": "~0.0.1",
-        
+
         "optimist": "~0.3.1",
-        
+
         "mappings": "0.1.x",
-        "amd-loader": "~0.0.4"
+        "amd-loader": "~0.0.4",
+        "netutil": "~0.0.1",
+        "connect-architect": "~0.0.1"
     },
-    
+
     "devDependencies": {
         "nodeunit": "~0.7.4",
         "sinon": "~1.3.4",
@@ -42,6 +44,7 @@
         "jsDAV":        ["npm", "https://github.com/ajaxorg/jsDAV/tarball/00f2fb3ba522de1fac0765ee8e62de468be53816"],
         "v8debug":      ["npm", "https://github.com/ajaxorg/lib-v8debug/tarball/c61477136918bda992faf3d4a61834ff680af45c"],
         "treehugger":   ["npm", "https://github.com/ajaxorg/treehugger/tarball/6417527445915e5794e37849a1eeb8a9c6493a75"],
+        "vfs":          ["npm", "https://github.com/c9/vfs/tarball/a48785071133a580417c47d253e9e7f21a2ad6c6"],
         "packager":     ["npm", "https://github.com/ajaxorg/packager/tarball/b830cc5961190d8442ff7ac3c0c566924a7df195"]
     },
 
