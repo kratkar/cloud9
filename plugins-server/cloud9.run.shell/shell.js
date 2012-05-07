@@ -1,8 +1,5 @@
 "use strict";
 
-var spawn = require("child_process").spawn;
-var killTree = require("./killtree").killTree;
-
 /**
  * Run shell commands
  */
@@ -10,25 +7,21 @@ var killTree = require("./killtree").killTree;
 var exports = module.exports = function setup(options, imports, register) {
     var pm = imports["process-manager"];
 
-    imports.sandbox.getUnixId(function(err, unixId) {
-        if (err) return register(err);
+    pm.addRunner("shell", exports.factory(imports.vfs));
 
-        pm.addRunner("shell", exports.factory(unixId));
-
-        register(null, {
-            "run-shell": {}
-        });
+    register(null, {
+        "run-shell": {}
     });
 };
 
-exports.factory = function(uid) {
+exports.factory = function(vfs) {
     return function(args, eventEmitter, eventName) {
-        return new Runner(uid, args.command, args.args, args.cwd, args.env, args.extra, eventEmitter, eventName);
+        return new Runner(vfs, args.command, args.args, args.cwd, args.env, args.extra, eventEmitter, eventName);
     };
 };
 
-var Runner = exports.Runner = function(uid, command, args, cwd, env, extra, eventEmitter, eventName) {
-    this.uid = uid;
+var Runner = exports.Runner = function(vfs, command, args, cwd, env, extra, eventEmitter, eventName) {
+    this.vfs = vfs;
     this.command = command;
     this.args = args || [];
     this.extra = extra;
@@ -102,18 +95,10 @@ var Runner = exports.Runner = function(uid, command, args, cwd, env, extra, even
     };
 
     this.createChild = function(callback) {
-        if (this.uid) {
-            this.args = ["-Hu", "#" + this.uid, this.command].concat(this.args);
-            this.command = "sudo";
-        }
-
-        try {
-            // console.log(this.command, this.args)
-            var child = spawn(this.command, this.args, this.runOptions);
-        } catch (e) {
-            return callback(e);
-        }
-        callback(null, child);
+        this.runOptions.args = this.args;
+        this.vfs.spawn(this.command, this.runOptions, function(err, meta) {
+            callback(err, meta && meta.process);
+        });
     };
 
     this.attachEvents = function(child) {
@@ -159,14 +144,7 @@ var Runner = exports.Runner = function(uid, command, args, cwd, env, extra, even
     };
 
     this.kill = function() {
-        var self = this;
-        killTree(this.pid);
-
-        // check after 2sec if the process is really dead
-        // If not kill it harder
-        setTimeout(function() {
-            killTree(self.pid, "SIGKILL");
-        }, 2000);
+        this.child && this.child.kill();
     };
 
     this.describe = function() {

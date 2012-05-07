@@ -1,7 +1,6 @@
 "use strict";
 
 var util = require("util");
-var netutil = require("netutil");
 var NodeRunner = require("../cloud9.run.node/node").Runner;
 var NodeDebugProxy = require("./nodedebugproxy");
 
@@ -12,22 +11,19 @@ var NodeDebugProxy = require("./nodedebugproxy");
 var exports = module.exports = function setup(options, imports, register) {
     var pm = imports["process-manager"];
     var ide = imports.ide.getServer();
+    var vfs = imports.vfs;
 
-    imports.sandbox.getUnixId(function(err, unixId) {
-        if (err) return register(err);
+    pm.addRunner("node-debug", exports.factory(vfs, ide));
 
-        pm.addRunner("node-debug", exports.factory(unixId, ide));
-
-        register(null, {
-            "run-node-debug": {}
-        });
+    register(null, {
+        "run-node-debug": {}
     });
 };
 
-exports.factory = function(uid, ide) {
+exports.factory = function(vfs, ide) {
     return function(args, eventEmitter, eventName) {
         var cwd = args.cwd || ide.workspaceDir;
-        return new Runner(uid, args.file, args.args, cwd, args.env, args.breakOnStart, args.extra, eventEmitter, eventName);
+        return new Runner(vfs, args.file, args.args, cwd, args.env, args.breakOnStart, args.extra, eventEmitter, eventName);
     };
 };
 
@@ -51,23 +47,18 @@ function mixin(Class, Parent) {
 
     proto.createChild = function(callback) {
         var self = this;
+        var port = 5858;
 
-        netutil.findFreePort(this.NODE_DEBUG_PORT, 64000, "localhost", function(err, port) {
-            if (err)
-                return callback("Could not find a free port");
+        if (self.breakOnStart)
+            self.nodeArgs.push("--debug-brk=" + port);
+        else
+            self.nodeArgs.push("--debug=" + port);
 
+        Parent.prototype.createChild.call(self, callback);
 
-            if (self.breakOnStart)
-                self.nodeArgs.push("--debug-brk=" + port);
-            else
-                self.nodeArgs.push("--debug=" + port);
-
-            Parent.prototype.createChild.call(self, callback);
-
-            setTimeout(function() {
-                self._startDebug(port);
-            }, 100);
-        });
+        setTimeout(function() {
+            self._startDebug(port);
+        }, 100);
     };
 
     proto.debugCommand = function(msg) {
@@ -100,7 +91,7 @@ function mixin(Class, Parent) {
             self.eventEmitter.emit(self.eventName, msg);
         }
 
-        this.nodeDebugProxy = new NodeDebugProxy(port);
+        this.nodeDebugProxy = new NodeDebugProxy(this.vfs, port);
         this.nodeDebugProxy.on("message", function(body) {
             // console.log("REC", body)
             send({
