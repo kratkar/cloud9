@@ -27,8 +27,8 @@ exports.factory = function(vfs, ide) {
     };
 };
 
-var Runner = exports.Runner = function(uid, file, args, cwd, env, breakOnStart, extra, eventEmitter, eventName) {
-    NodeRunner.call(this, uid, file, args, cwd, env, extra, eventEmitter, eventName);
+var Runner = exports.Runner = function(vfs, file, args, cwd, env, breakOnStart, extra, eventEmitter, eventName) {
+    NodeRunner.call(this, vfs, file, args, cwd, env, extra, eventEmitter, eventName);
     this.breakOnStart = breakOnStart;
     this.extra = extra;
     this.msgQueue = [];
@@ -47,7 +47,7 @@ function mixin(Class, Parent) {
 
     proto.createChild = function(callback) {
         var self = this;
-        var port = 5858;
+        var port = this.NODE_DEBUG_PORT;
 
         if (self.breakOnStart)
             self.nodeArgs.push("--debug-brk=" + port);
